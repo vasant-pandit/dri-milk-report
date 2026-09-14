@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI Milk Collection WhatsApp Report / दुग्ध संग्रहण रिपोर्ट</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #ece5dd;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  }
+  header {
+    background: #075E54;
+    color: #fff;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  .lang-toggle { text-align: center; padding: 10px; background: #f0f0f0; }
+  .lang-toggle button {
+    padding: 6px 16px; margin: 0 4px; border: 1px solid #075E54;
+    background: #fff; color: #075E54; border-radius: 16px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .lang-toggle button.active { background: #075E54; color: #fff; }
+  form { padding: 16px 20px; }
+  .section-title {
+    background: #DCF8C6; padding: 8px 12px; border-radius: 6px;
+    font-weight: 600; margin: 16px 0 10px; font-size: 14px; color: #075E54;
+  }
+  label {
+    display: block; font-size: 13px; font-weight: 600;
+    margin-bottom: 3px; margin-top: 10px; color: #333;
+  }
+  input, select {
+    width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+    border-radius: 6px; font-size: 14px;
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  .btn-group { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  button.action {
+    padding: 12px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer; color: #fff;
+  }
+  .btn-preview { background: #34495e; }
+  .btn-send { background: #25D366; }
+  .btn-copy { background: #128C7E; }
+  #preview {
+    display: none; margin: 16px 20px; padding: 12px; background: #DCF8C6;
+    border-radius: 8px; font-size: 13px; white-space: pre-wrap;
+    font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; border: 1px solid #bcd9a6;
+  }
+  .phone-field { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #ccc; }
+  .hint { font-size: 11px; color: #777; margin-top: 2px; }
+  .readonly-field { background: #f5f5f5; font-weight: 700; color: #075E54; }
+  footer { text-align: center; font-size: 11px; color: #999; padding: 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>DRI दुग्ध संग्रहण केंद्र रिपोर्ट</h1>
+    <p>DRI Supported Milk Collection Centre Report</p>
+  </header>
+
+  <div class="lang-toggle">
+    <button id="btnHi" class="active" onclick="setLang('hi')">हिंदी</button>
+    <button id="btnEn" onclick="setLang('en')">English</button>
+    <button id="btnBoth" onclick="setLang('both')">Both / दोनों</button>
+  </div>
+
+  <form id="reportForm">
+    <label><span class="lbl-hi">तारीख / </span><span class="lbl-en">Date</span></label>
+    <input type="date" id="date" required>
+
+    <label><span class="lbl-hi">स्थान / </span><span class="lbl-en">Place</span></label>
+    <input type="text" id="place" placeholder="केंद्र का नाम / Centre name" required>
+
+    <label><span class="lbl-hi">समय / </span><span class="lbl-en">Morning / Evening</span></label>
+    <select id="session">
+      <option value="प्रातः / Morning">प्रातः / Morning</option>
+      <option value="सायं / Evening">सायं / Evening</option>
+    </select>
+
+    <div class="section-title">🐄 <span class="lbl-hi">गाय / </span><span class="lbl-en">Cow</span></div>
+    <div class="row">
+      <div><label><span class="lbl-hi">फैट / </span><span class="lbl-en">Fat (%)</span></label>
+        <input type="number" step="0.01" id="cowFat"></div>
+      <div><label>LR</label><input type="number" step="0.1" id="cowLR"></div>
+      <div><label>SNF (%)</label><input type="number" step="0.01" id="cowSNF"></div>
+    </div>
+    <div class="row">
+      <div><label><span class="lbl-hi">मात्रा (लीटर) / </span><span class="lbl-en">Quantity (L)</span></label>
+        <input type="number" step="0.1" id="cowQty" oninput="updateTotalQty()"></div>
+      <div><label><span class="lbl-hi">किसानों की संख्या / </span><span class="lbl-en">No. of Kisan</span></label>
+        <input type="number" id="cowKisan"></div>
+    </div>
+    <div class="row">
+      <div><label><span class="lbl-hi">वैन आगमन / </span><span class="lbl-en">Van Arrival</span></label>
+        <input type="time" id="cowArrival"></div>
+      <div><label><span class="lbl-hi">वैन प्रस्थान / </span><span class="lbl-en">Van Departure</span></label>
+        <input type="time" id="cowDeparture"></div>
+    </div>
+
+    <div class="section-title">🐃 <span class="lbl-hi">भैंस / </span><span class="lbl-en">Buffalo</span></div>
+    <div class="row">
+      <div><label><span class="lbl-hi">फैट / </span><span class="lbl-en">Fat (%)</span></label>
+        <input type="number" step="0.01" id="buffFat"></div>
+      <div><label>LR</label><input type="number" step="0.1" id="buffLR"></div>
+      <div><label>SNF (%)</label><input type="number" step="0.01" id="buffSNF"></div>
+    </div>
+    <div class="row">
+      <div><label><span class="lbl-hi">मात्रा (लीटर) / </span><span class="lbl-en">Quantity (L)</span></label>
+        <input type="number" step="0.1" id="buffQty" oninput="updateTotalQty()"></div>
+      <div><label><span class="lbl-hi">किसानों की संख्या / </span><span class="lbl-en">No. of Kisan</span></label>
+        <input type="number" id="buffKisan"></div>
+    </div>
+
+    <label><span class="lbl-hi">कुल मात्रा (लीटर) / </span><span class="lbl-en">Total Quantity (L)</span></label>
+    <input type="text" id="totalQty" class="readonly-field" readonly value="0.0">
+
+    <div class="row">
+      <div><label><span class="lbl-hi">वैन आगमन / </span><span class="lbl-en">Van Arrival</span></label>
+        <input type="time" id="buffArrival"></div>
+      <div><label><span class="lbl-hi">वैन प्रस्थान / </span><span class="lbl-en">Van Departure</span></label>
+        <input type="time" id="buffDeparture"></div>
+    </div>
+
+    <div class="phone-field">
+      <label><span class="lbl-hi">व्हाट्सएप नंबर (वैकल्पिक, देश कोड सहित) / </span><span class="lbl-en">WhatsApp Number (optional, with country code)</span></label>
+      <input type="text" id="phone" placeholder="91XXXXXXXXXX">
+      <div class="hint">खाली छोड़ें तो आप भेजते समय संपर्क चुन सकते हैं / Leave blank to choose a contact when sending</div>
+    </div>
+
+    <div class="btn-group">
+      <button type="button" class="action btn-preview" onclick="generatePreview()">👁 <span class="lbl-hi">पूर्वावलोकन / </span><span class="lbl-en">Preview Report</span></button>
+      <button type="button" class="action btn-copy" onclick="copyReport()">📋 <span class="lbl-hi">कॉपी करें / </span><span class="lbl-en">Copy Text</span></button>
+      <button type="button" class="action btn-send" onclick="sendToWhatsApp()">📤 <span class="lbl-hi">व्हाट्सएप पर भेजें / </span><span class="lbl-en">Send to WhatsApp</span></button>
+    </div>
+  </form>
+
+  <div id="preview"></div>
+
+  <footer>Deendayal Research Institute · DRI Milk Collection Centre Reporting Tool</footer>
+</div>
+
+<script>
+let currentLang = 'hi';
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  document.getElementById('btnBoth').classList.toggle('active', lang === 'both');
+  document.querySelectorAll('.lbl-hi').forEach(el => {
+    el.style.display = (lang === 'hi' || lang === 'both') ? 'inline' : 'none';
+  });
+  document.querySelectorAll('.lbl-en').forEach(el => {
+    el.style.display = (lang === 'en' || lang === 'both') ? 'inline' : 'none';
+  });
+}
+
+function val(id) {
+  const v = document.getElementById(id).value;
+  return v ? v : '—';
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
+}
+
+function updateTotalQty() {
+  const cowQty = parseFloat(document.getElementById('cowQty').value) || 0;
+  const buffQty = parseFloat(document.getElementById('buffQty').value) || 0;
+  document.getElementById('totalQty').value = (cowQty + buffQty).toFixed(1);
+}
+
+function buildReportText() {
+  const lang = currentLang;
+  const bi = (hi, en) => lang === 'hi' ? hi : lang === 'en' ? en : `${hi} / ${en}`;
+
+  let lines = [];
+  lines.push(`*${bi('DRI दुग्ध संग्रहण केंद्र रिपोर्ट','DRI Milk Collection Centre Report')}*`);
+  lines.push('');
+  lines.push(`${bi('तारीख','Date')}: ${formatDate(document.getElementById('date').value)}`);
+  lines.push(`${bi('स्थान','Place')}: ${val('place')}`);
+  lines.push(`${bi('समय','Session')}: ${document.getElementById('session').value}`);
+  lines.push('');
+  lines.push(`🐄 *${bi('गाय','Cow')}*`);
+  lines.push(`  ${bi('फैट','Fat')}: ${val('cowFat')}%`);
+  lines.push(`  LR: ${val('cowLR')}`);
+  lines.push(`  SNF: ${val('cowSNF')}%`);
+  lines.push(`  ${bi('मात्रा','Quantity')}: ${val('cowQty')} L`);
+  lines.push(`  ${bi('किसानों की संख्या','No. of Kisan')}: ${val('cowKisan')}`);
+  lines.push(`  ${bi('वैन आगमन','Van Arrival')}: ${val('cowArrival')}`);
+  lines.push(`  ${bi('वैन प्रस्थान','Van Departure')}: ${val('cowDeparture')}`);
+  lines.push('');
+  lines.push(`🐃 *${bi('भैंस','Buffalo')}*`);
+  lines.push(`  ${bi('फैट','Fat')}: ${val('buffFat')}%`);
+  lines.push(`  LR: ${val('buffLR')}`);
+  lines.push(`  SNF: ${val('buffSNF')}%`);
+  lines.push(`  ${bi('मात्रा','Quantity')}: ${val('buffQty')} L`);
+  lines.push(`  ${bi('किसानों की संख्या','No. of Kisan')}: ${val('buffKisan')}`);
+  lines.push(`  *${bi('कुल मात्रा','Total Quantity')}: ${document.getElementById('totalQty').value} L*`);
+  lines.push(`  ${bi('वैन आगमन','Van Arrival')}: ${val('buffArrival')}`);
+  lines.push(`  ${bi('वैन प्रस्थान','Van Departure')}: ${val('buffDeparture')}`);
+  lines.push('');
+
+  const cowKisan = parseInt(document.getElementById('cowKisan').value) || 0;
+  const buffKisan = parseInt(document.getElementById('buffKisan').value) || 0;
+  lines.push(`*${bi('कुल किसान','Total Kisan')}: ${cowKisan + buffKisan}*`);
+
+  return lines.join('\n');
+}
+
+function generatePreview() {
+  updateTotalQty();
+  const text = buildReportText();
+  const previewDiv = document.getElementById('preview');
+  previewDiv.style.display = 'block';
+  previewDiv.textContent = text;
+  previewDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyReport() {
+  updateTotalQty();
+  const text = buildReportText();
+  navigator.clipboard.writeText(text).then(() => {
+    alert(currentLang === 'en' ? 'Report copied to clipboard!' : 'रिपोर्ट कॉपी हो गई है!');
+  }).catch(() => {
+    generatePreview();
+    alert('Please select and copy the text manually / कृपया टेक्स्ट को मैन्युअल रूप से चुनें और कॉपी करें');
+  });
+}
+
+function sendToWhatsApp() {
+  updateTotalQty();
+  const text = buildReportText();
+  const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, '');
+  const encoded = encodeURIComponent(text);
+  let url;
+  if (phone) {
+    url = `https://wa.me/${phone}?text=${encoded}`;
+  } else {
+    url = `https://wa.me/?text=${encoded}`;
+  }
+  generatePreview();
+  window.open(url, '_blank');
+}
+
+document.getElementById('date').valueAsDate = new Date();
+</script>
+</body>
+</html>

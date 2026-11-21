@@ -1,0 +1,20 @@
+# Render Blueprint — static hosting for DRI milk tools
+# Deploy: https://render.com/deploy?repo=https://github.com/vasant-pandit/dri-milk-report
+services:
+  - type: web
+    name: dri-milk-report
+    runtime: static
+    repo: https://github.com/vasant-pandit/dri-milk-report
+    branch: cursor/jsds-milk-income-calculator-f53f
+    buildCommand: "true"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /calculator
+        destination: /income-calculator.html
+      - type: rewrite
+        source: /income
+        destination: /income-calculator.html
+      - type: rewrite
+        source: /report
+        destination: /index.html

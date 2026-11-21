@@ -16,3 +16,20 @@ Enter Fat (%), Lactometer Reading (LR), milk temperature (°C) and quantity (L).
 Rates: cow milk up to 5.5% fat at ₹308/kg total solids; buffalo from 5.6% fat at ₹850/kg fat (as published by Jabalpur Sahakari Dugdh Sangh Maryadit).
 
 Open either HTML file in a browser — no build step required.
+
+## Deploy on Render (public URL)
+
+This repo includes a Render Blueprint (`render.yaml`) for a free static site.
+
+1. Open **[Deploy to Render](https://render.com/deploy?repo=https://github.com/vasant-pandit/dri-milk-report)**  
+   (or in the [Render Dashboard](https://dashboard.render.com/): **New → Blueprint** / **New → Static Site**, connect `vasant-pandit/dri-milk-report`).
+2. Select branch `cursor/jsds-milk-income-calculator-f53f` (or `main` after the PR is merged).
+3. **Build Command:** leave as `true` (no build).
+4. **Publish Directory:** `.`
+5. Click **Create Static Site** / **Apply**.
+
+After deploy, your public URLs will look like:
+
+- Centre report: `https://<your-service>.onrender.com/`
+- Income calculator: `https://<your-service>.onrender.com/income-calculator.html`  
+  (also `/calculator` and `/income`)

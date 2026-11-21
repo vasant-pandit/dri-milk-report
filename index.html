@@ -28,6 +28,15 @@
   }
   header h1 { margin: 0; font-size: 18px; }
   header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  .nav {
+    display: flex; gap: 0; background: #064e46;
+  }
+  .nav a {
+    flex: 1; text-align: center; padding: 10px 8px;
+    color: #c8ebe6; text-decoration: none; font-size: 12px; font-weight: 600;
+    border-bottom: 3px solid transparent;
+  }
+  .nav a.active { color: #fff; border-bottom-color: #25D366; background: #075E54; }
   .lang-toggle { text-align: center; padding: 10px; background: #f0f0f0; }
   .lang-toggle button {
     padding: 6px 16px; margin: 0 4px; border: 1px solid #075E54;
@@ -75,6 +84,11 @@
     <h1>DRI दुग्ध संग्रहण केंद्र रिपोर्ट</h1>
     <p>DRI Supported Milk Collection Centre Report</p>
   </header>
+
+  <nav class="nav">
+    <a href="index.html" class="active"><span class="lbl-hi">केंद्र रिपोर्ट / </span><span class="lbl-en">Centre Report</span></a>
+    <a href="income-calculator.html"><span class="lbl-hi">आय कैलकुलेटर / </span><span class="lbl-en">Income Calculator</span></a>
+  </nav>
 
   <div class="lang-toggle">
     <button id="btnHi" class="active" onclick="setLang('hi')">हिंदी</button>

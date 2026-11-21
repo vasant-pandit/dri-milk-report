@@ -1,0 +1,17 @@
+# Render Blueprint — creates a free static site (CDN)
+services:
+  - type: web
+    name: dri-milk-report
+    runtime: static
+    buildCommand: "true"
+    staticPublishPath: .
+    routes:
+      - type: rewrite
+        source: /calculator
+        destination: /income-calculator.html
+      - type: rewrite
+        source: /income
+        destination: /income-calculator.html
+      - type: rewrite
+        source: /report
+        destination: /index.html

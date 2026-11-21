@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DRI Milk Income Calculator / दुग्ध आय कैलकुलेटर</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #ece5dd;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+  .container {
+    max-width: 560px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  }
+  header {
+    background: #075E54;
+    color: #fff;
+    padding: 16px 20px;
+    text-align: center;
+  }
+  header h1 { margin: 0; font-size: 18px; }
+  header p { margin: 4px 0 0; font-size: 13px; opacity: 0.9; }
+  .nav {
+    display: flex; gap: 0; background: #064e46;
+  }
+  .nav a {
+    flex: 1; text-align: center; padding: 10px 8px;
+    color: #c8ebe6; text-decoration: none; font-size: 12px; font-weight: 600;
+    border-bottom: 3px solid transparent;
+  }
+  .nav a.active { color: #fff; border-bottom-color: #25D366; background: #075E54; }
+  .lang-toggle { text-align: center; padding: 10px; background: #f0f0f0; }
+  .lang-toggle button {
+    padding: 6px 16px; margin: 0 4px; border: 1px solid #075E54;
+    background: #fff; color: #075E54; border-radius: 16px;
+    cursor: pointer; font-size: 13px; font-weight: 600;
+  }
+  .lang-toggle button.active { background: #075E54; color: #fff; }
+  form { padding: 16px 20px; }
+  .section-title {
+    background: #DCF8C6; padding: 8px 12px; border-radius: 6px;
+    font-weight: 600; margin: 16px 0 10px; font-size: 14px; color: #075E54;
+  }
+  label {
+    display: block; font-size: 13px; font-weight: 600;
+    margin-bottom: 3px; margin-top: 10px; color: #333;
+  }
+  input, select {
+    width: 100%; padding: 8px 10px; border: 1px solid #ccc;
+    border-radius: 6px; font-size: 14px;
+  }
+  .row { display: flex; gap: 10px; }
+  .row > div { flex: 1; }
+  .btn-group { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  button.action {
+    padding: 12px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer; color: #fff;
+  }
+  .btn-calc { background: #075E54; }
+  .btn-preview { background: #34495e; }
+  .btn-send { background: #25D366; }
+  .btn-copy { background: #128C7E; }
+  .btn-reset { background: #7f8c8d; }
+  #result {
+    display: none; margin: 0 20px 8px; padding: 14px;
+    background: #e8f5e9; border-radius: 8px; border: 1px solid #a5d6a7;
+  }
+  #result .big {
+    font-size: 28px; font-weight: 700; color: #075E54; margin: 6px 0;
+  }
+  #result .meta { font-size: 13px; color: #444; line-height: 1.6; }
+  #result.error {
+    background: #ffebee; border-color: #ef9a9a;
+  }
+  #result.error .big { color: #c62828; font-size: 16px; }
+  #preview {
+    display: none; margin: 16px 20px; padding: 12px; background: #DCF8C6;
+    border-radius: 8px; font-size: 13px; white-space: pre-wrap;
+    font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.5; border: 1px solid #bcd9a6;
+  }
+  .phone-field { margin-top: 16px; padding-top: 12px; border-top: 1px dashed #ccc; }
+  .hint { font-size: 11px; color: #777; margin-top: 2px; }
+  .readonly-field { background: #f5f5f5; font-weight: 700; color: #075E54; }
+  .rate-note {
+    margin: 12px 20px 0; padding: 10px 12px; background: #fff8e1;
+    border-radius: 6px; font-size: 12px; color: #6d4c00; line-height: 1.45;
+  }
+  footer { text-align: center; font-size: 11px; color: #999; padding: 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>DRI दुग्ध आय कैलकुलेटर</h1>
+    <p>JSDS Milk Income Calculator · Rate wef 21.11.2026</p>
+  </header>
+
+  <nav class="nav">
+    <a href="index.html"><span class="lbl-hi">केंद्र रिपोर्ट / </span><span class="lbl-en">Centre Report</span></a>
+    <a href="income-calculator.html" class="active"><span class="lbl-hi">आय कैलकुलेटर / </span><span class="lbl-en">Income Calculator</span></a>
+  </nav>
+
+  <div class="lang-toggle">
+    <button id="btnHi" class="active" onclick="setLang('hi')">हिंदी</button>
+    <button id="btnEn" onclick="setLang('en')">English</button>
+    <button id="btnBoth" onclick="setLang('both')">Both / दोनों</button>
+  </div>
+
+  <div class="rate-note">
+    <span class="lbl-hi">जबलपुर सहकारी दुग्ध संघ (JSDS) भाव सूची — 21.11.2026 से प्रभावशील। गाय: ठोस पदार्थ ₹308/किग्रा · भैंस: फैट ₹850/किग्रा। दूध का प्रकार चुनें, फिर एनालाइज़र की फैट व LR रीडिंग भरें।</span>
+    <span class="lbl-en">JSDS purchase rate chart effective 21.11.2026. Cow: ₹308/kg total solids · Buffalo: ₹850/kg fat. Select milk type, then enter analyzer Fat and LR.</span>
+  </div>
+
+  <form id="calcForm" onsubmit="return false;">
+    <label><span class="lbl-hi">तारीख / </span><span class="lbl-en">Date</span></label>
+    <input type="date" id="date" required>
+
+    <label><span class="lbl-hi">किसान का नाम (वैकल्पिक) / </span><span class="lbl-en">Farmer name (optional)</span></label>
+    <input type="text" id="farmerName" placeholder="नाम / Name">
+
+    <label><span class="lbl-hi">दूध का प्रकार / </span><span class="lbl-en">Milk type</span></label>
+    <select id="milkType" onchange="recalculate()" required>
+      <option value="" selected disabled>चुनें / Select</option>
+      <option value="cow">गाय / Cow (≤ 5.5% Fat)</option>
+      <option value="buffalo">भैंस / Buffalo (≥ 5.6% Fat)</option>
+    </select>
+
+    <div class="section-title">🔬 <span class="lbl-hi">एनालाइज़र रीडिंग / </span><span class="lbl-en">Analyzer Reading</span></div>
+
+    <div class="row">
+      <div>
+        <label><span class="lbl-hi">फैट (%) / </span><span class="lbl-en">Fat (%)</span></label>
+        <input type="number" step="0.1" min="3.0" max="10.0" id="fat" placeholder="3.0 – 10.0" oninput="recalculate()">
+      </div>
+      <div>
+        <label><span class="lbl-hi">LR (लैक्टोमीटर) / </span><span class="lbl-en">LR (Lactometer)</span></label>
+        <input type="number" step="1" min="25" max="30" id="lr" placeholder="25 – 30" oninput="recalculate()">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label><span class="lbl-hi">मात्रा (लीटर) / </span><span class="lbl-en">Quantity (L)</span></label>
+        <input type="number" step="0.1" min="0" id="qty" placeholder="लीटर / Litres" oninput="recalculate()">
+      </div>
+      <div>
+        <label><span class="lbl-hi">दर ₹/लीटर / </span><span class="lbl-en">Rate ₹/L</span></label>
+        <input type="text" id="rateOut" class="readonly-field" readonly value="—">
+      </div>
+    </div>
+
+    <label><span class="lbl-hi">अनुमानित आय (₹) / </span><span class="lbl-en">Estimated income (₹)</span></label>
+    <input type="text" id="incomeOut" class="readonly-field" readonly value="—">
+
+    <div class="phone-field">
+      <label><span class="lbl-hi">व्हाट्सएप नंबर (वैकल्पिक, देश कोड सहित) / </span><span class="lbl-en">WhatsApp Number (optional, with country code)</span></label>
+      <input type="text" id="phone" placeholder="91XXXXXXXXXX">
+      <div class="hint"><span class="lbl-hi">खाली छोड़ें तो भेजते समय संपर्क चुन सकते हैं / </span><span class="lbl-en">Leave blank to choose a contact when sending</span></div>
+    </div>
+
+    <div class="btn-group">
+      <button type="button" class="action btn-calc" onclick="recalculate(true)">🧮 <span class="lbl-hi">आय निकालें / </span><span class="lbl-en">Calculate Income</span></button>
+      <button type="button" class="action btn-preview" onclick="generatePreview()">👁 <span class="lbl-hi">पूर्वावलोकन / </span><span class="lbl-en">Preview</span></button>
+      <button type="button" class="action btn-copy" onclick="copyReport()">📋 <span class="lbl-hi">कॉपी करें / </span><span class="lbl-en">Copy Text</span></button>
+      <button type="button" class="action btn-send" onclick="sendToWhatsApp()">📤 <span class="lbl-hi">व्हाट्सएप पर भेजें / </span><span class="lbl-en">Send to WhatsApp</span></button>
+      <button type="button" class="action btn-reset" onclick="resetForm()">↺ <span class="lbl-hi">रीसेट / </span><span class="lbl-en">Reset</span></button>
+    </div>
+  </form>
+
+  <div id="result"></div>
+  <div id="preview"></div>
+
+  <footer>Deendayal Research Institute · DRI Milk Income Calculator · JSDS rates wef 21.11.2026</footer>
+</div>
+
+<script>
+/* JSDS Fat × LR (25–30) rate chart, effective 21.11.2026. Values ₹/litre. */
+const RATE_TABLE = {
+  "3.0": [30.24, 31.76, 33.28, 34.80, 36.20, 37.59],
+  "3.1": [30.67, 32.19, 33.71, 35.22, 36.62, 38.01],
+  "3.2": [31.10, 32.62, 34.14, 35.64, 37.04, 38.43],
+  "3.3": [31.53, 33.05, 34.67, 36.06, 37.46, 38.85],
+  "3.4": [31.96, 33.48, 35.09, 36.48, 37.88, 39.27],
+  "3.5": [32.39, 33.91, 35.51, 36.90, 38.30, 39.69],
+  "3.6": [32.82, 34.34, 35.93, 37.32, 38.72, 40.11],
+  "3.7": [33.25, 34.77, 36.35, 37.74, 39.14, 40.53],
+  "3.8": [33.68, 35.20, 36.77, 38.16, 39.56, 40.95],
+  "3.9": [34.11, 35.63, 37.19, 38.58, 39.98, 41.37],
+  "4.0": [34.54, 36.06, 37.61, 39.00, 40.40, 41.79],
+  "4.1": [34.97, 36.49, 38.02, 39.42, 40.81, 42.21],
+  "4.2": [35.40, 36.92, 38.44, 39.84, 41.23, 42.63],
+  "4.3": [35.83, 37.35, 38.86, 40.26, 41.65, 43.05],
+  "4.4": [36.26, 37.78, 39.28, 40.68, 42.07, 43.47],
+  "4.5": [36.69, 38.21, 39.70, 41.10, 42.49, 43.89],
+  "4.6": [37.12, 38.73, 40.12, 41.52, 42.91, 44.31],
+  "4.7": [37.55, 39.15, 40.54, 41.94, 43.33, 44.73],
+  "4.8": [37.98, 39.57, 40.96, 42.36, 43.75, 45.15],
+  "4.9": [38.41, 39.99, 41.38, 42.78, 44.17, 45.57],
+  "5.0": [38.84, 40.41, 41.80, 43.20, 44.59, 45.99],
+  "5.1": [39.27, 40.83, 42.22, 43.62, 45.01, 46.41],
+  "5.2": [39.70, 41.25, 42.64, 44.04, 45.43, 46.83],
+  "5.3": [40.12, 41.66, 43.06, 44.45, 45.85, 47.24],
+  "5.4": [40.55, 42.08, 43.48, 44.87, 46.27, 47.66],
+  "5.5": [40.98, 42.50, 43.90, 45.29, 46.69, 48.08],
+  "5.6": [44.81, 45.90, 46.53, 47.15, 47.78, 48.40],
+  "5.7": [45.72, 46.80, 47.43, 48.05, 48.68, 49.30],
+  "5.8": [46.63, 47.70, 48.33, 48.95, 49.58, 50.20],
+  "5.9": [47.54, 48.60, 49.23, 49.85, 50.48, 51.10],
+  "6.0": [48.45, 49.50, 50.13, 50.75, 51.38, 52.00],
+  "6.1": [49.36, 51.85, 51.85, 51.85, 51.85, 51.85],
+  "6.2": [50.27, 52.70, 52.70, 52.70, 52.70, 52.70],
+  "6.3": [51.18, 53.55, 53.55, 53.55, 53.55, 53.55],
+  "6.4": [52.09, 54.40, 54.40, 54.40, 54.40, 54.40],
+  "6.5": [53.00, 55.25, 55.25, 55.25, 55.25, 55.25],
+  "6.6": [53.91, 56.10, 56.10, 56.10, 56.10, 56.10],
+  "6.7": [54.82, 56.95, 56.95, 56.95, 56.95, 56.95],
+  "6.8": [56.07, 57.80, 57.80, 57.80, 57.80, 57.80],
+  "6.9": [56.97, 58.65, 58.65, 58.65, 58.65, 58.65],
+  "7.0": [57.87, 59.50, 59.50, 59.50, 59.50, 59.50],
+  "7.1": [58.77, 60.35, 60.35, 60.35, 60.35, 60.35],
+  "7.2": [59.67, 61.20, 61.20, 61.20, 61.20, 61.20],
+  "7.3": [60.57, 62.05, 62.05, 62.05, 62.05, 62.05],
+  "7.4": [61.47, 62.90, 62.90, 62.90, 62.90, 62.90],
+  "7.5": [62.37, 63.75, 63.75, 63.75, 63.75, 63.75],
+  "7.6": [63.27, 64.60, 64.60, 64.60, 64.60, 64.60],
+  "7.7": [64.17, 65.45, 65.45, 65.45, 65.45, 65.45],
+  "7.8": [65.07, 66.30, 66.30, 66.30, 66.30, 66.30],
+  "7.9": [65.97, 67.15, 67.15, 67.15, 67.15, 67.15],
+  "8.0": [66.87, 68.00, 68.00, 68.00, 68.00, 68.00],
+  "8.1": [67.77, 68.85, 68.85, 68.85, 68.85, 68.85],
+  "8.2": [68.67, 69.70, 69.70, 69.70, 69.70, 69.70],
+  "8.3": [69.57, 70.55, 70.55, 70.55, 70.55, 70.55],
+  "8.4": [70.47, 71.40, 71.40, 71.40, 71.40, 71.40],
+  "8.5": [71.37, 72.25, 72.25, 72.25, 72.25, 72.25],
+  "8.6": [72.27, 73.10, 73.10, 73.10, 73.10, 73.10],
+  "8.7": [73.17, 73.95, 73.95, 73.95, 73.95, 73.95],
+  "8.8": [74.07, 74.80, 74.80, 74.80, 74.80, 74.80],
+  "8.9": [74.97, 75.65, 75.65, 75.65, 75.65, 75.65],
+  "9.0": [75.87, 76.50, 76.50, 76.50, 76.50, 76.50],
+  "9.1": [76.77, 77.35, 77.35, 77.35, 77.35, 77.35],
+  "9.2": [77.67, 78.20, 78.20, 78.20, 78.20, 78.20],
+  "9.3": [78.57, 79.05, 79.05, 79.05, 79.05, 79.05],
+  "9.4": [79.47, 79.90, 79.90, 79.90, 79.90, 79.90],
+  "9.5": [80.37, 80.75, 80.75, 80.75, 80.75, 80.75],
+  "9.6": [81.27, 81.60, 81.60, 81.60, 81.60, 81.60],
+  "9.7": [82.17, 82.45, 82.45, 82.45, 82.45, 82.45],
+  "9.8": [83.07, 83.30, 83.30, 83.30, 83.30, 83.30],
+  "9.9": [83.97, 84.15, 84.15, 84.15, 84.15, 84.15],
+  "10.0": [84.87, 85.00, 85.00, 85.00, 85.00, 85.00]
+};
+
+const LR_COLUMNS = [25, 26, 27, 28, 29, 30];
+
+function roundFat(fat) {
+  return (Math.round(Number(fat) * 10) / 10).toFixed(1);
+}
+
+let currentLang = 'hi';
+let lastCalc = null;
+
+function setLang(lang) {
+  currentLang = lang;
+  document.getElementById('btnHi').classList.toggle('active', lang === 'hi');
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  document.getElementById('btnBoth').classList.toggle('active', lang === 'both');
+  document.querySelectorAll('.lbl-hi').forEach(el => {
+    el.style.display = (lang === 'hi' || lang === 'both') ? 'inline' : 'none';
+  });
+  document.querySelectorAll('.lbl-en').forEach(el => {
+    el.style.display = (lang === 'en' || lang === 'both') ? 'inline' : 'none';
+  });
+  if (lastCalc) showResult(lastCalc);
+}
+
+function bi(hi, en) {
+  return currentLang === 'hi' ? hi : currentLang === 'en' ? en : `${hi} / ${en}`;
+}
+
+function formatDate(d) {
+  if (!d) return '—';
+  const parts = d.split('-');
+  return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
+}
+
+function lookupRate(fatKey, lr) {
+  const row = RATE_TABLE[fatKey];
+  if (!row) return null;
+  const idx = LR_COLUMNS.indexOf(lr);
+  if (idx < 0) return null;
+  return row[idx];
+}
+
+function calculate() {
+  const fatRaw = document.getElementById('fat').value;
+  const lrRaw = document.getElementById('lr').value;
+  const qtyRaw = document.getElementById('qty').value;
+  const milkType = document.getElementById('milkType').value;
+
+  if (!milkType) {
+    return { ok: false, message: bi('कृपया दूध का प्रकार चुनें।', 'Please select milk type.') };
+  }
+
+  if (fatRaw === '' || lrRaw === '') {
+    return { ok: false, message: bi('कृपया फैट और LR भरें।', 'Please enter Fat and LR.') };
+  }
+
+  const fatNum = Number(fatRaw);
+  const lr = Math.round(Number(lrRaw));
+  const qty = qtyRaw === '' ? null : Number(qtyRaw);
+
+  if (Number.isNaN(fatNum) || fatNum < 3.0 || fatNum > 10.0) {
+    return { ok: false, message: bi('फैट 3.0% से 10.0% के बीच होना चाहिए।', 'Fat must be between 3.0% and 10.0%.') };
+  }
+
+  const fatKey = roundFat(fatNum);
+
+  if (milkType === 'cow' && Number(fatKey) > 5.5) {
+    return { ok: false, message: bi('गाय दूध हेतु फैट अधिकतम 5.5%। भैंस चुनें या फैट घटाएँ।', 'Cow milk Fat max is 5.5%. Choose buffalo or lower Fat.') };
+  }
+  if (milkType === 'buffalo' && Number(fatKey) < 5.6) {
+    return { ok: false, message: bi('भैंस दूध हेतु फैट न्यूनतम 5.6%। गाय चुनें या फैट बढ़ाएँ।', 'Buffalo milk Fat min is 5.6%. Choose cow or raise Fat.') };
+  }
+
+  if (lr < 25 || lr > 30) {
+    return {
+      ok: false,
+      fatKey, lr, milkType, qty,
+      message: bi(
+        `LR ${lr} चार्ट सीमा (25–30) से बाहर है।`,
+        `LR ${lr} is outside the chart range (25–30).`
+      )
+    };
+  }
+
+  const rate = lookupRate(fatKey, lr);
+  if (rate == null) {
+    return { ok: false, message: bi('इस फैट/LR के लिए दर नहीं मिली।', 'No rate found for this Fat/LR.') };
+  }
+
+  const income = qty != null && !Number.isNaN(qty) ? rate * qty : null;
+  return {
+    ok: true,
+    fatKey, lr, rate, qty, income, milkType,
+    farmerName: document.getElementById('farmerName').value.trim(),
+    date: document.getElementById('date').value
+  };
+}
+
+function showResult(calc) {
+  const box = document.getElementById('result');
+  box.style.display = 'block';
+  box.classList.toggle('error', !calc.ok);
+
+  if (!calc.ok) {
+    document.getElementById('rateOut').value = '—';
+    document.getElementById('incomeOut').value = '—';
+    box.innerHTML = `<div class="big">${calc.message}</div>`;
+    return;
+  }
+
+  document.getElementById('rateOut').value = calc.rate.toFixed(2);
+  document.getElementById('incomeOut').value =
+    calc.income != null ? calc.income.toFixed(2) : '—';
+
+  const typeLabel = calc.milkType === 'cow'
+    ? bi('गाय', 'Cow')
+    : bi('भैंस', 'Buffalo');
+  const incomeLine = calc.income != null
+    ? `<div class="big">₹ ${calc.income.toFixed(2)}</div>`
+    : `<div class="big">${bi('मात्रा भरें आय के लिए', 'Enter quantity for income')}</div>`;
+
+  box.innerHTML = `
+    ${incomeLine}
+    <div class="meta">
+      ${bi('दर', 'Rate')}: <strong>₹ ${calc.rate.toFixed(2)}</strong> / ${bi('लीटर', 'L')}<br>
+      ${bi('प्रकार', 'Type')}: ${typeLabel} · ${bi('फैट', 'Fat')}: ${calc.fatKey}% · LR: ${calc.lr}<br>
+      ${calc.qty != null ? `${bi('मात्रा', 'Qty')}: ${calc.qty} L` : ''}
+    </div>
+  `;
+}
+
+function recalculate(scroll) {
+  const calc = calculate();
+  lastCalc = calc;
+  showResult(calc);
+  if (scroll) {
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  return calc;
+}
+
+function buildReportText() {
+  const calc = recalculate(false);
+  const lines = [];
+  lines.push(`*${bi('DRI दुग्ध आय गणना', 'DRI Milk Income Calculation')}*`);
+  lines.push(`_${bi('JSDS भाव सूची', 'JSDS rate chart')} wef 21.11.2026_`);
+  lines.push('');
+  lines.push(`${bi('तारीख', 'Date')}: ${formatDate(document.getElementById('date').value)}`);
+  const name = document.getElementById('farmerName').value.trim();
+  if (name) lines.push(`${bi('किसान', 'Farmer')}: ${name}`);
+  lines.push('');
+
+  if (!calc.ok) {
+    lines.push(`⚠️ ${calc.message}`);
+    if (calc.lr != null) {
+      lines.push(`${bi('फैट', 'Fat')}: ${calc.fatKey || '—'}%`);
+      lines.push(`LR: ${calc.lr}`);
+    }
+    return lines.join('\n');
+  }
+
+  const typeLabel = calc.milkType === 'cow' ? bi('गाय', 'Cow') : bi('भैंस', 'Buffalo');
+  lines.push(`${bi('दूध का प्रकार', 'Milk type')}: ${typeLabel}`);
+  lines.push(`${bi('फैट', 'Fat')}: ${calc.fatKey}%`);
+  lines.push(`LR: ${calc.lr}`);
+  lines.push(`${bi('दर', 'Rate')}: ₹ ${calc.rate.toFixed(2)} / ${bi('लीटर', 'L')}`);
+  if (calc.qty != null) {
+    lines.push(`${bi('मात्रा', 'Quantity')}: ${calc.qty} L`);
+    lines.push(`*${bi('अनुमानित आय', 'Estimated income')}: ₹ ${calc.income.toFixed(2)}*`);
+  }
+  lines.push('');
+  lines.push(`_${bi('सूचना: यह गणना आधिकारिक भाव सूची पर आधारित अनुमान है।', 'Note: Estimate based on the official rate chart.')}_`);
+  return lines.join('\n');
+}
+
+function generatePreview() {
+  const text = buildReportText();
+  const previewDiv = document.getElementById('preview');
+  previewDiv.style.display = 'block';
+  previewDiv.textContent = text;
+  previewDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyReport() {
+  const text = buildReportText();
+  navigator.clipboard.writeText(text).then(() => {
+    alert(currentLang === 'en' ? 'Copied to clipboard!' : 'कॉपी हो गया!');
+  }).catch(() => {
+    generatePreview();
+    alert('Please select and copy the text manually / कृपया टेक्स्ट को मैन्युअल रूप से चुनें और कॉपी करें');
+  });
+}
+
+function sendToWhatsApp() {
+  const text = buildReportText();
+  const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, '');
+  const encoded = encodeURIComponent(text);
+  const url = phone ? `https://wa.me/${phone}?text=${encoded}` : `https://wa.me/?text=${encoded}`;
+  generatePreview();
+  window.open(url, '_blank');
+}
+
+function resetForm() {
+  document.getElementById('calcForm').reset();
+  document.getElementById('date').valueAsDate = new Date();
+  document.getElementById('rateOut').value = '—';
+  document.getElementById('incomeOut').value = '—';
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('preview').style.display = 'none';
+  lastCalc = null;
+}
+
+document.getElementById('date').valueAsDate = new Date();
+</script>
+</body>
+</html>

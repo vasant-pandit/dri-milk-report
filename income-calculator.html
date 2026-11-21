@@ -115,8 +115,8 @@
   </div>
 
   <div class="rate-note">
-    <span class="lbl-hi">जबलपुर सहकारी दुग्ध संघ (JSDS) भाव सूची — 21.11.2026 से प्रभावशील। गाय: ठोस पदार्थ ₹308/किग्रा · भैंस: फैट ₹850/किग्रा। एनालाइज़र की फैट व LR रीडिंग तथा तापमान से CLR निकालकर दर देखें।</span>
-    <span class="lbl-en">JSDS purchase rate chart effective 21.11.2026. Cow: ₹308/kg total solids · Buffalo: ₹850/kg fat. Enter analyzer Fat, LR and temperature to get CLR and rate.</span>
+    <span class="lbl-hi">जबलपुर सहकारी दुग्ध संघ (JSDS) भाव सूची — 21.11.2026 से प्रभावशील। गाय: ठोस पदार्थ ₹308/किग्रा · भैंस: फैट ₹850/किग्रा। दूध का प्रकार चुनें, फिर एनालाइज़र की फैट व LR रीडिंग भरें।</span>
+    <span class="lbl-en">JSDS purchase rate chart effective 21.11.2026. Cow: ₹308/kg total solids · Buffalo: ₹850/kg fat. Select milk type, then enter analyzer Fat and LR.</span>
   </div>
 
   <form id="calcForm" onsubmit="return false;">
@@ -127,8 +127,8 @@
     <input type="text" id="farmerName" placeholder="नाम / Name">
 
     <label><span class="lbl-hi">दूध का प्रकार / </span><span class="lbl-en">Milk type</span></label>
-    <select id="milkType" onchange="recalculate()">
-      <option value="auto">स्वतः (फैट से) / Auto (from Fat)</option>
+    <select id="milkType" onchange="recalculate()" required>
+      <option value="" selected disabled>चुनें / Select</option>
       <option value="cow">गाय / Cow (≤ 5.5% Fat)</option>
       <option value="buffalo">भैंस / Buffalo (≥ 5.6% Fat)</option>
     </select>
@@ -142,26 +142,14 @@
       </div>
       <div>
         <label><span class="lbl-hi">LR (लैक्टोमीटर) / </span><span class="lbl-en">LR (Lactometer)</span></label>
-        <input type="number" step="1" min="20" max="40" id="lr" placeholder="e.g. 28" oninput="recalculate()">
+        <input type="number" step="1" min="25" max="30" id="lr" placeholder="25 – 30" oninput="recalculate()">
       </div>
     </div>
 
     <div class="row">
-      <div>
-        <label><span class="lbl-hi">तापमान (°C) / </span><span class="lbl-en">Temperature (°C)</span></label>
-        <input type="number" step="1" min="19" max="36" id="temp" placeholder="19 – 36" oninput="recalculate()">
-        <div class="hint"><span class="lbl-hi">CLR = LR + तापमान सुधार / </span><span class="lbl-en">CLR = LR + temp correction</span></div>
-      </div>
       <div>
         <label><span class="lbl-hi">मात्रा (लीटर) / </span><span class="lbl-en">Quantity (L)</span></label>
         <input type="number" step="0.1" min="0" id="qty" placeholder="लीटर / Litres" oninput="recalculate()">
-      </div>
-    </div>
-
-    <div class="row">
-      <div>
-        <label>CLR <span class="lbl-hi">(सुधारित) / </span><span class="lbl-en">(corrected)</span></label>
-        <input type="text" id="clrOut" class="readonly-field" readonly value="—">
       </div>
       <div>
         <label><span class="lbl-hi">दर ₹/लीटर / </span><span class="lbl-en">Rate ₹/L</span></label>
@@ -194,7 +182,7 @@
 </div>
 
 <script>
-/* JSDS Fat × CLR (25–30) rate chart, effective 21.11.2026. Values ₹/litre. */
+/* JSDS Fat × LR (25–30) rate chart, effective 21.11.2026. Values ₹/litre. */
 const RATE_TABLE = {
   "3.0": [30.24, 31.76, 33.28, 34.80, 36.20, 37.59],
   "3.1": [30.67, 32.19, 33.71, 35.22, 36.62, 38.01],
@@ -269,19 +257,7 @@ const RATE_TABLE = {
   "10.0": [84.87, 85.00, 85.00, 85.00, 85.00, 85.00]
 };
 
-const CLR_COLUMNS = [25, 26, 27, 28, 29, 30];
-
-/** Temperature (°C) → LR correction to get CLR (JSDS chart note 10). */
-function tempCorrection(temp) {
-  const t = Math.round(Number(temp));
-  if (t >= 19 && t <= 21) return -3;
-  if (t >= 22 && t <= 24) return -2;
-  if (t >= 25 && t <= 27) return -1;
-  if (t >= 28 && t <= 30) return 0;
-  if (t >= 31 && t <= 33) return 1;
-  if (t >= 34 && t <= 36) return 2;
-  return null;
-}
+const LR_COLUMNS = [25, 26, 27, 28, 29, 30];
 
 function roundFat(fat) {
   return (Math.round(Number(fat) * 10) / 10).toFixed(1);
@@ -314,10 +290,10 @@ function formatDate(d) {
   return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : d;
 }
 
-function lookupRate(fatKey, clr) {
+function lookupRate(fatKey, lr) {
   const row = RATE_TABLE[fatKey];
   if (!row) return null;
-  const idx = CLR_COLUMNS.indexOf(clr);
+  const idx = LR_COLUMNS.indexOf(lr);
   if (idx < 0) return null;
   return row[idx];
 }
@@ -325,35 +301,27 @@ function lookupRate(fatKey, clr) {
 function calculate() {
   const fatRaw = document.getElementById('fat').value;
   const lrRaw = document.getElementById('lr').value;
-  const tempRaw = document.getElementById('temp').value;
   const qtyRaw = document.getElementById('qty').value;
-  const milkTypeSel = document.getElementById('milkType').value;
+  const milkType = document.getElementById('milkType').value;
 
-  if (fatRaw === '' || lrRaw === '' || tempRaw === '') {
-    return { ok: false, message: bi('कृपया फैट, LR और तापमान भरें।', 'Please enter Fat, LR and temperature.') };
+  if (!milkType) {
+    return { ok: false, message: bi('कृपया दूध का प्रकार चुनें।', 'Please select milk type.') };
+  }
+
+  if (fatRaw === '' || lrRaw === '') {
+    return { ok: false, message: bi('कृपया फैट और LR भरें।', 'Please enter Fat and LR.') };
   }
 
   const fatNum = Number(fatRaw);
   const lr = Math.round(Number(lrRaw));
-  const temp = Number(tempRaw);
   const qty = qtyRaw === '' ? null : Number(qtyRaw);
 
   if (Number.isNaN(fatNum) || fatNum < 3.0 || fatNum > 10.0) {
     return { ok: false, message: bi('फैट 3.0% से 10.0% के बीच होना चाहिए।', 'Fat must be between 3.0% and 10.0%.') };
   }
 
-  const corr = tempCorrection(temp);
-  if (corr === null) {
-    return { ok: false, message: bi('तापमान 19°C से 36°C के बीच होना चाहिए।', 'Temperature must be between 19°C and 36°C.') };
-  }
-
-  const clr = lr + corr;
   const fatKey = roundFat(fatNum);
 
-  let milkType = milkTypeSel;
-  if (milkType === 'auto') {
-    milkType = Number(fatKey) <= 5.5 ? 'cow' : 'buffalo';
-  }
   if (milkType === 'cow' && Number(fatKey) > 5.5) {
     return { ok: false, message: bi('गाय दूध हेतु फैट अधिकतम 5.5%। भैंस चुनें या फैट घटाएँ।', 'Cow milk Fat max is 5.5%. Choose buffalo or lower Fat.') };
   }
@@ -361,26 +329,26 @@ function calculate() {
     return { ok: false, message: bi('भैंस दूध हेतु फैट न्यूनतम 5.6%। गाय चुनें या फैट बढ़ाएँ।', 'Buffalo milk Fat min is 5.6%. Choose cow or raise Fat.') };
   }
 
-  if (clr < 25 || clr > 30) {
+  if (lr < 25 || lr > 30) {
     return {
       ok: false,
-      fatKey, lr, temp, corr, clr, milkType, qty,
+      fatKey, lr, milkType, qty,
       message: bi(
-        `CLR ${clr} चार्ट सीमा (25–30) से बाहर है। LR या तापमान जाँचें।`,
-        `CLR ${clr} is outside the chart range (25–30). Check LR or temperature.`
+        `LR ${lr} चार्ट सीमा (25–30) से बाहर है।`,
+        `LR ${lr} is outside the chart range (25–30).`
       )
     };
   }
 
-  const rate = lookupRate(fatKey, clr);
+  const rate = lookupRate(fatKey, lr);
   if (rate == null) {
-    return { ok: false, message: bi('इस फैट/CLR के लिए दर नहीं मिली।', 'No rate found for this Fat/CLR.') };
+    return { ok: false, message: bi('इस फैट/LR के लिए दर नहीं मिली।', 'No rate found for this Fat/LR.') };
   }
 
   const income = qty != null && !Number.isNaN(qty) ? rate * qty : null;
   return {
     ok: true,
-    fatKey, lr, temp, corr, clr, rate, qty, income, milkType,
+    fatKey, lr, rate, qty, income, milkType,
     farmerName: document.getElementById('farmerName').value.trim(),
     date: document.getElementById('date').value
   };
@@ -392,14 +360,12 @@ function showResult(calc) {
   box.classList.toggle('error', !calc.ok);
 
   if (!calc.ok) {
-    document.getElementById('clrOut').value = calc.clr != null ? String(calc.clr) : '—';
     document.getElementById('rateOut').value = '—';
     document.getElementById('incomeOut').value = '—';
     box.innerHTML = `<div class="big">${calc.message}</div>`;
     return;
   }
 
-  document.getElementById('clrOut').value = String(calc.clr);
   document.getElementById('rateOut').value = calc.rate.toFixed(2);
   document.getElementById('incomeOut').value =
     calc.income != null ? calc.income.toFixed(2) : '—';
@@ -407,7 +373,6 @@ function showResult(calc) {
   const typeLabel = calc.milkType === 'cow'
     ? bi('गाय', 'Cow')
     : bi('भैंस', 'Buffalo');
-  const corrLabel = (calc.corr > 0 ? `+${calc.corr}` : String(calc.corr));
   const incomeLine = calc.income != null
     ? `<div class="big">₹ ${calc.income.toFixed(2)}</div>`
     : `<div class="big">${bi('मात्रा भरें आय के लिए', 'Enter quantity for income')}</div>`;
@@ -416,8 +381,7 @@ function showResult(calc) {
     ${incomeLine}
     <div class="meta">
       ${bi('दर', 'Rate')}: <strong>₹ ${calc.rate.toFixed(2)}</strong> / ${bi('लीटर', 'L')}<br>
-      ${bi('प्रकार', 'Type')}: ${typeLabel} · ${bi('फैट', 'Fat')}: ${calc.fatKey}% · CLR: ${calc.clr}<br>
-      LR ${calc.lr} · ${bi('तापमान', 'Temp')} ${calc.temp}°C · ${bi('सुधार', 'correction')} ${corrLabel}<br>
+      ${bi('प्रकार', 'Type')}: ${typeLabel} · ${bi('फैट', 'Fat')}: ${calc.fatKey}% · LR: ${calc.lr}<br>
       ${calc.qty != null ? `${bi('मात्रा', 'Qty')}: ${calc.qty} L` : ''}
     </div>
   `;
@@ -446,20 +410,17 @@ function buildReportText() {
 
   if (!calc.ok) {
     lines.push(`⚠️ ${calc.message}`);
-    if (calc.clr != null) {
+    if (calc.lr != null) {
       lines.push(`${bi('फैट', 'Fat')}: ${calc.fatKey || '—'}%`);
-      lines.push(`LR: ${calc.lr} · ${bi('तापमान', 'Temp')}: ${calc.temp}°C · CLR: ${calc.clr}`);
+      lines.push(`LR: ${calc.lr}`);
     }
     return lines.join('\n');
   }
 
   const typeLabel = calc.milkType === 'cow' ? bi('गाय', 'Cow') : bi('भैंस', 'Buffalo');
-  const corrSign = calc.corr > 0 ? `+${calc.corr}` : String(calc.corr);
   lines.push(`${bi('दूध का प्रकार', 'Milk type')}: ${typeLabel}`);
   lines.push(`${bi('फैट', 'Fat')}: ${calc.fatKey}%`);
   lines.push(`LR: ${calc.lr}`);
-  lines.push(`${bi('तापमान', 'Temperature')}: ${calc.temp}°C (${bi('सुधार', 'correction')} ${corrSign})`);
-  lines.push(`CLR: ${calc.clr}`);
   lines.push(`${bi('दर', 'Rate')}: ₹ ${calc.rate.toFixed(2)} / ${bi('लीटर', 'L')}`);
   if (calc.qty != null) {
     lines.push(`${bi('मात्रा', 'Quantity')}: ${calc.qty} L`);
@@ -500,7 +461,6 @@ function sendToWhatsApp() {
 function resetForm() {
   document.getElementById('calcForm').reset();
   document.getElementById('date').valueAsDate = new Date();
-  document.getElementById('clrOut').value = '—';
   document.getElementById('rateOut').value = '—';
   document.getElementById('incomeOut').value = '—';
   document.getElementById('result').style.display = 'none';

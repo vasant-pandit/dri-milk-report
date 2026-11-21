@@ -7,10 +7,9 @@ Bilingual DRI milk tools for WhatsApp sharing:
 
 ## Income calculator
 
-Enter Fat (%), Lactometer Reading (LR), milk temperature (°C) and quantity (L). The tool:
+Select milk type (cow/buffalo), then enter Fat (%), Lactometer Reading (LR 25–30) and quantity (L). The tool:
 
-- Corrects LR → CLR using the JSDS temperature table
-- Looks up ₹/litre from the Fat × CLR (25–30) chart
+- Looks up ₹/litre from the Fat × LR (25–30) chart
 - Shows estimated income and can preview / copy / send on WhatsApp
 
 Rates: cow milk up to 5.5% fat at ₹308/kg total solids; buffalo from 5.6% fat at ₹850/kg fat (as published by Jabalpur Sahakari Dugdh Sangh Maryadit).
